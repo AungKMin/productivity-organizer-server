@@ -8,7 +8,7 @@ Server for Productivity Organizer.
 
 Productivity Organizer is a note-taking application with social-media-inspired features like commenting, tags, and a "similar notes" feature. This repository contains the code for Productivity Organizer's REST API. 
 
-### Features include
+### Server Features include
 * user authentication
 * user authorization for creating, updating, deleting, and viewing posts 
 * JSON Web Token user sign-in sessions
@@ -21,10 +21,17 @@ Productivity Organizer is a note-taking application with social-media-inspired f
 * Node
 * MongoDB (MongoDB Atlas or a local server)
 
-### Executing program
+### Installation
+In both the client and server folders, run:
+```
+npm install
+```
 
-* Run `npm install` inside the folder
-* Ensure a local MongoDB server is running. The default is `localhost:27017`
+### Executing program
+Ensure a local MongoDB server is running. The default port is `localhost:27017`. In both the server and client folders, run: 
+```
+npm start
+```
 
 ## License
 

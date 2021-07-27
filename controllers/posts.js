@@ -137,98 +137,118 @@ export const createPost = async (req, res) => {
 }
 
 export const updatePost = async (req, res) => { 
-    const { id: _id } = req.params;
-    const post = req.body;
+    try {
+        const { id: _id } = req.params;
+        const post = req.body;
 
-    if (!req.userId) { 
-        return res.json( { message: 'Unauthenticated'} );
-    } 
+        if (!req.userId) { 
+            return res.json( { message: 'Unauthenticated'} );
+        } 
 
-    if (!(mongoose.Types.ObjectId.isValid(_id) && new mongoose.Types.ObjectId(_id).toString() === _id)) { 
-        return res.status(404).send('No post with that id');
-    } 
+        if (!(mongoose.Types.ObjectId.isValid(_id) && new mongoose.Types.ObjectId(_id).toString() === _id)) { 
+            return res.status(404).send('No post with that id');
+        } 
 
-    const originalPost = await PostMessage.findById(_id);
+        const originalPost = await PostMessage.findById(_id);
 
-    if (post.creator !== req.userId) {
-        return res.json(originalPost);
-    } 
+        if (post.creator !== req.userId) {
+            return res.json(originalPost);
+        } 
 
-    const updatedPost = await PostMessage.findByIdAndUpdate(_id, { ...post, _id } , { new: true });
+        const updatedPost = await PostMessage.findByIdAndUpdate(_id, { ...post, _id } , { new: true });
 
-    res.json(updatedPost);
+        res.json(updatedPost);
+    } catch (error) { 
+        // error due to conflict with current state (409)
+        res.status(409).json({ message: error.message });    
+    }
 }
 
 export const deletePost = async (req, res) => { 
-    const { id: _id } = req.params;
+    try {
+        const { id: _id } = req.params;
 
-    if (!req.userId) { 
-        return res.json( { message: 'Unauthenticated'} );
-    } 
-    
-    if (!(mongoose.Types.ObjectId.isValid(_id) && new mongoose.Types.ObjectId(_id).toString() === _id)) { 
-        return res.status(404).send('No post with that id');
-    } 
+        if (!req.userId) { 
+            return res.json( { message: 'Unauthenticated'} );
+        } 
+        
+        if (!(mongoose.Types.ObjectId.isValid(_id) && new mongoose.Types.ObjectId(_id).toString() === _id)) { 
+            return res.status(404).send('No post with that id');
+        } 
 
-    const post = await PostMessage.findById(_id);
+        const post = await PostMessage.findById(_id);
 
-    if (post.creator === req.userId) {
-        await PostMessage.findByIdAndRemove(_id);
-        let creator = await User.findById(post.creator);
-        creator.posts = creator.posts.filter(item => item != _id);
-        await User.findByIdAndUpdate(post.creator, creator, { new: true });
-    } else { 
-        return res.json({ message: 'User does not have permission to delete this post.' });
+        if (post.creator === req.userId) {
+            await PostMessage.findByIdAndRemove(_id);
+            let creator = await User.findById(post.creator);
+            creator.posts = creator.posts.filter(item => item != _id);
+            await User.findByIdAndUpdate(post.creator, creator, { new: true });
+        } else { 
+            return res.json({ message: 'User does not have permission to delete this post.' });
+        }
+
+        res.json({ message: 'Post deleted successfully' });
+    } catch (error) { 
+        // error due to conflict with current state (409)
+        res.status(409).json({ message: error.message });    
     }
-
-    res.json({ message: 'Post deleted successfully' });
 }
 
 export const likePost = async (req, res) => { 
-    const {id : _id} = req.params;
+    try {
+        const {id : _id} = req.params;
 
-    if (!req.userId) { 
-        return res.json( { message: 'Unauthenticated'} );
-    } 
+        if (!req.userId) { 
+            return res.json( { message: 'Unauthenticated'} );
+        } 
 
-    if (!(mongoose.Types.ObjectId.isValid(_id) && new mongoose.Types.ObjectId(_id).toString() === _id)) { 
-        return res.status(404).send('No post with that id');
-    } 
+        if (!(mongoose.Types.ObjectId.isValid(_id) && new mongoose.Types.ObjectId(_id).toString() === _id)) { 
+            return res.status(404).send('No post with that id');
+        } 
 
-    const post = await PostMessage.findById(_id);
+        const post = await PostMessage.findById(_id);
 
-    const index = post.likes.findIndex((id) => id === String(req.userId));
+        const index = post.likes.findIndex((id) => id === String(req.userId));
 
-    if (index === -1) { 
-        // user likes the post
-        post.likes.push(req.userId);
-    } else { 
-        // user dislikes the post 
-        post.likes = post.likes.filter((id) => id !== String(req.userId));
+        if (index === -1) { 
+            // user likes the post
+            post.likes.push(req.userId);
+        } else { 
+            // user dislikes the post 
+            post.likes = post.likes.filter((id) => id !== String(req.userId));
+        }
+
+        const updatedPost = await PostMessage.findByIdAndUpdate(_id, post, { new: true });
+
+        res.json(updatedPost);
+    } catch (error) { 
+        // error due to conflict with current state (409)
+        res.status(409).json({ message: error.message });   
     }
-
-    const updatedPost = await PostMessage.findByIdAndUpdate(_id, post, { new: true });
-
-    res.json(updatedPost);
 }
 
 export const commentPost = async (req, res) => { 
-    const { id } = req.params;
-    const { value } = req.body;
+    try {
+        const { id } = req.params;
+        const { value } = req.body;
 
-    if (!req.userId) { 
-        return res.json({ message: 'Unauthenticated!' });
+        if (!req.userId) { 
+            return res.json({ message: 'Unauthenticated!' });
+        }
+
+        if (!(mongoose.Types.ObjectId.isValid(id) && new mongoose.Types.ObjectId(id).toString() === id)) { 
+            return res.status(404).send('No post with that id');
+        } 
+
+        const post = await PostMessage.findById(id);
+
+        post.comments.push(value);
+
+        const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true });
+
+        res.json(updatedPost);
+    } catch (error) { 
+        // error due to conflict with current state (409)
+        res.status(409).json({ message: error.message });   
     }
-
-    if (!(mongoose.Types.ObjectId.isValid(id) && new mongoose.Types.ObjectId(id).toString() === id)) { 
-        return res.status(404).send('No post with that id');
-    } 
-
-    const post = await PostMessage.findById(id);
-
-    post.comments.push(value);
-
-    const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true });
-
-    res.json(updatedPost);
 }

@@ -15,13 +15,13 @@ export const signin = async (req, res) => {
         const existingUser = await User.findOne({ email });
 
         if (!existingUser) { 
-            return res.status(404).json({ message: "User does't exist" });
+                return res.status(404).json( { message: "User does't exist" } );
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, existingUser.password); // compare hashed password
 
         if (!isPasswordCorrect) { 
-            return res.status(400).json({ message: "Invalid credentials." });
+            return res.status(400).json({ message: "Invalid password." });
         }
 
         const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, jwtSecret, { expiresIn: "1h" });

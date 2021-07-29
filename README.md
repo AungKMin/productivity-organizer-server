@@ -2,6 +2,8 @@
 
 Server for Productivity Organizer. 
 
+Application hosted here: https://productivity-organizer.netlify.app
+
 **Used technologies:** *Node.js, Express, MongoDB, JSON Web Token*
 
 ## Description

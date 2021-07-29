@@ -48,7 +48,7 @@ export const getPostsByUser = async (req, res) => {
     }
     
     try { 
-        const LIMIT = 2; // max number of posts per page
+        const LIMIT = 8; // max number of posts per page
         const startIndex = (Number(page) - 1) * LIMIT; // starting index of posts in given page
         const user = await User.findById(req.userId);
         const totalNumPosts = user.posts.length;

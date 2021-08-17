@@ -2,7 +2,8 @@
 
 Server for Productivity Organizer. 
 
-Server repository: https://github.com/AungKMin/productivity-organizer-server
+Server repository: https://github.com/AungKMin/productivity-organizer-server 
+
 Client repository: https://github.com/AungKMin/productivity-organizer-client
 
 Application hosted here: https://productivity-organizer.netlify.app
